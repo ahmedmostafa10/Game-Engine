@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 //Forward definition for error checking functions
 std::string checkForShaderCompilationErrors(GLuint shader);
@@ -20,24 +21,51 @@ bool our::ShaderProgram::attach(const std::string &filename, GLenum type) const 
     const char* sourceCStr = sourceString.c_str();
     file.close();
 
-    //TODO: Complete this function
     //Note: The function "checkForShaderCompilationErrors" checks if there is
     // an error in the given shader. You should use it to check if there is a
     // compilation error and print it so that you can know what is wrong with
     // the shader. The returned string will be empty if there is no errors.
 
-    //We return true if the compilation succeeded
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &sourceCStr, nullptr);
+    glCompileShader(shader);
+    std::string errorLog =checkForShaderCompilationErrors(shader);
+    if(!errorLog.empty()){
+        std::cerr << "Shader Compilation Error in " << filename << ":\n" << errorLog << std::endl;
+        glDeleteShader(shader); // Clean up if there's an error
+        return false;
+    }
+
+    glAttachShader(program, shader);
     return true;
 }
 
 
 
 bool our::ShaderProgram::link() const {
-    //TODO: Complete this function
     //Note: The function "checkForLinkingErrors" checks if there is
     // an error in the given program. You should use it to check if there is a
     // linking error and print it so that you can know what is wrong with the
     // program. The returned string will be empty if there is no errors.
+    glLinkProgram(program);
+
+    std::string errorLog=checkForLinkingErrors(program);
+    if(!errorLog.empty()){
+        std::cerr << "Linking Error: " << errorLog << std::endl;
+        return false;
+    }
+
+    GLint shaderCount = 0;
+    glGetProgramiv(program, GL_ATTACHED_SHADERS, &shaderCount); // Get the count of attached shaders
+
+    if (shaderCount > 0) {
+        std::vector<GLuint> shaders(shaderCount);
+        glGetAttachedShaders(program, shaderCount, nullptr, shaders.data()); // Get shader IDs
+
+        for (GLuint shader : shaders) {
+            glDeleteShader(shader);
+        }
+    }
 
     return true;
 }
