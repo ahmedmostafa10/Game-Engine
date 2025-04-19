@@ -58,11 +58,11 @@ our::Mesh* our::mesh_utils::loadOBJ(const std::string& filename) {
                     attrib.texcoords[2 * index.texcoord_index + 1]
             };
 
-
+            // Colors in OBJ files are in range 0-1, convert to 0-255
             vertex.color = {
-                    attrib.colors[3 * index.vertex_index + 0] * 255,
-                    attrib.colors[3 * index.vertex_index + 1] * 255,
-                    attrib.colors[3 * index.vertex_index + 2] * 255,
+                    static_cast<unsigned char>(attrib.colors[3 * index.vertex_index + 0] * 255.0f),
+                    static_cast<unsigned char>(attrib.colors[3 * index.vertex_index + 1] * 255.0f),
+                    static_cast<unsigned char>(attrib.colors[3 * index.vertex_index + 2] * 255.0f),
                     255
             };
 
