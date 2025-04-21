@@ -45,11 +45,10 @@ namespace our {
         
         shader->set("alphaThreshold", alphaThreshold); 
 
-        GLint unit = 0; 
         glActiveTexture(GL_TEXTURE0);
         texture->bind();
-        sampler->bind(unit); 
-        shader->set("tex", unit);
+        sampler->bind(0); 
+        shader->set("tex", 0);
     }
 
     // This function read the material data from a json object
