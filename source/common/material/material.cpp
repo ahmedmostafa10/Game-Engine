@@ -60,4 +60,52 @@ namespace our {
         sampler = AssetLoader<Sampler>::get(data.value("sampler", ""));
     }
 
+    void LitMaterial::setup() const{
+        TexturedMaterial::setup();
+        if(sampler) sampler->bind(0);
+        if(albedo)   albedo->bind(0);
+        if(specular) specular->bind(1);
+        if(roughness) roughness->bind(2);
+        if(ao)       ao->bind(3);
+        if(emission) emission->bind(4);
+
+        shader->set("albedoMap", 0);
+        shader->set("specularMap", 1);
+        shader->set("roughnessMap", 2);
+        shader->set("aoMap", 3);
+        shader->set("emissionMap", 4);
+    }
+
+    void LitMaterial::deserialize(const nlohmann::json& data){
+        TexturedMaterial::deserialize(data);
+        if(!data.is_object()) return;
+            // Load the remaining textures if they exist
+        if(data.contains("specular")) {
+            std::string specularPath = data["specular"];
+            specular = texture_utils::loadImage(specularPath);
+        }
+
+        if(data.contains("roughness")) {
+            std::string roughnessPath = data["roughness"];
+            roughness = texture_utils::loadImage(roughnessPath);
+        }
+
+        if(data.contains("ao")) {
+            std::string aoPath = data["ao"];
+            ao = texture_utils::loadImage(aoPath);
+        }
+
+        if(data.contains("emission")) {
+            std::string emissionPath = data["emission"];
+            emission = texture_utils::loadImage(emissionPath);
+        }
+
+        // Setup sampler (with default filtering/wrapping)
+        sampler = new Sampler();
+        sampler->set(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        sampler->set(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        sampler->set(GL_TEXTURE_WRAP_S, GL_REPEAT);
+        sampler->set(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    }
+
 }
