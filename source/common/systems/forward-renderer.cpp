@@ -2,6 +2,7 @@
 #include "../mesh/mesh-utils.hpp"
 #include "../texture/texture-utils.hpp"
 
+
 namespace our {
 
     void ForwardRenderer::initialize(glm::ivec2 windowSize, const nlohmann::json& config){
@@ -144,6 +145,10 @@ namespace our {
                     opaqueCommands.push_back(command);
                 }
             }
+            //collect all light components
+            if(auto light = entity->getComponent<LightComponent>(); light){
+                lights.push_back(light);
+            }
         }
 
         // If there is no camera, we return (we cannot render without a camera)
@@ -182,12 +187,42 @@ namespace our {
 
         //TODO: (Req 9) Clear the color and depth buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //Prepare light data for shaders
+        int lightCount = (int)lights.size(); // e.g., #define MAX_LIGHTS 8
+        std::vector<glm::vec3> lightPositions;
+        std::vector<glm::vec3> lightDirections;
+        std::vector<glm::vec4> lightColors;
+        std::vector<int> lightTypes;
+
+        for(int i = 0; i < lightCount; ++i){
+            auto* light = lights[i];
+            auto* owner = light->getOwner();
+            glm::mat4 localToWorld = owner->getLocalToWorldMatrix();
+
+            lightPositions.push_back(glm::vec3(localToWorld * glm::vec4(0, 0, 0, 1)));
+            lightDirections.push_back(glm::normalize(glm::vec3(localToWorld * glm::vec4(0, 0, -1, 0))));
+            lightColors.push_back(light->color);
+            lightTypes.push_back((int)light->type); // cast enum to int
+        }
         
         //TODO: (Req 9) Draw all the opaque commands
         // Don't forget to set the "transform" uniform to be equal the model-view-projection matrix for each render command
         for(auto& command : opaqueCommands){
             command.material->setup();
             command.material->shader->set("transform", VP * command.localToWorld);
+            ////added for light
+            if(auto litMat = dynamic_cast<LitMaterial*>(command.material); litMat){
+                litMat->shader->set("camera_position", camera->getOwner()->getLocalToWorldMatrix() * glm::vec4(0,0,0,1));
+                litMat->shader->set("light_count", lightCount);
+                for(int i = 0; i < lightCount; ++i){
+                    litMat->shader->set("lights[" + std::to_string(i) + "].position", lightPositions[i]);
+                    litMat->shader->set("lights[" + std::to_string(i) + "].direction", lightDirections[i]);
+                    litMat->shader->set("lights[" + std::to_string(i) + "].color", lightColors[i]);
+                    litMat->shader->set("lights[" + std::to_string(i) + "].type", lightTypes[i]);
+                }
+            }
+            
             command.mesh->draw();
         }
         
@@ -222,6 +257,17 @@ namespace our {
         for(auto& command : transparentCommands){
             command.material->setup();
             command.material->shader->set("transform", VP * command.localToWorld);
+            ////added for light
+            if(auto litMat = dynamic_cast<LitMaterial*>(command.material); litMat){
+                litMat->shader->set("camera_position", camera->getOwner()->getLocalToWorldMatrix() * glm::vec4(0,0,0,1));
+                litMat->shader->set("light_count", lightCount);
+                for(int i = 0; i < lightCount; ++i){
+                    litMat->shader->set("lights[" + std::to_string(i) + "].position", lightPositions[i]);
+                    litMat->shader->set("lights[" + std::to_string(i) + "].direction", lightDirections[i]);
+                    litMat->shader->set("lights[" + std::to_string(i) + "].color", lightColors[i]);
+                    litMat->shader->set("lights[" + std::to_string(i) + "].type", lightTypes[i]);
+                }
+            }
             command.mesh->draw();
         }
 

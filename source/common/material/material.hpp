@@ -53,12 +53,38 @@ namespace our {
         void deserialize(const nlohmann::json& data) override;
     };
 
+    // This material add the needed parameters for light 
+
+    class LitMaterial : public TexturedMaterial{
+        public:
+            glm::vec4 ambientColor;//affects specular reflections
+            glm::vec4 specularColor;//affects specular reflections
+            glm::vec4 diffuseColor;//affects diffuse reflections
+            glm::vec4 surfaceColor;
+            int specularPower;//defines roughness but 0 is rough and infinity is smooth
+            short metalnessFactor;// if 1 material is metalic, if 0 material is dielectric
+            short surfaceRoughness;// if 0 surface is perfectly smooth, if 1 surface is rough
+
+            //Texture2D* albedo = nullptr;
+            Texture2D* specular = nullptr;
+            Texture2D* roughness = nullptr;
+            Texture2D* ao = nullptr;
+            Texture2D* emission = nullptr;
+            Sampler* sampler = nullptr;       
+
+            void setup() const override;
+            void deserialize(const nlohmann::json& data) override;
+
+    }; 
+
     // This function returns a new material instance based on the given type
     inline Material* createMaterialFromType(const std::string& type){
         if(type == "tinted"){
             return new TintedMaterial();
         } else if(type == "textured"){
             return new TexturedMaterial();
+        } else if(type == "lit"){
+            return new LitMaterial();
         } else {
             return new Material();
         }
