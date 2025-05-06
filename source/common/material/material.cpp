@@ -62,12 +62,14 @@ namespace our {
 
     void LitMaterial::setup() const{
         TexturedMaterial::setup();
+        shader->attach("assets/shaders/light-test.vert", GL_VERTEX_SHADER);
+        shader->attach("assets/shaders/light-test.frag", GL_FRAGMENT_SHADER);
+        shader->link();
         if(sampler) sampler->bind(0);
-        if(albedo)   albedo->bind(0);
-        if(specular) specular->bind(1);
-        if(roughness) roughness->bind(2);
-        if(ao)       ao->bind(3);
-        if(emission) emission->bind(4);
+        if(specular) specular->bind();
+        if(roughness) roughness->bind();
+        if(ao)       ao->bind();
+        if(emission) emission->bind();
 
         shader->set("albedoMap", 0);
         shader->set("specularMap", 1);
@@ -82,22 +84,22 @@ namespace our {
             // Load the remaining textures if they exist
         if(data.contains("specular")) {
             std::string specularPath = data["specular"];
-            specular = texture_utils::loadImage(specularPath);
+            specular = AssetLoader<Texture2D>::get(data.value("specular", ""));
         }
 
         if(data.contains("roughness")) {
             std::string roughnessPath = data["roughness"];
-            roughness = texture_utils::loadImage(roughnessPath);
+            roughness = AssetLoader<Texture2D>::get(data.value("roughness", ""));
         }
 
         if(data.contains("ao")) {
             std::string aoPath = data["ao"];
-            ao = texture_utils::loadImage(aoPath);
+            ao = AssetLoader<Texture2D>::get(data.value("ao", ""));
         }
 
         if(data.contains("emission")) {
             std::string emissionPath = data["emission"];
-            emission = texture_utils::loadImage(emissionPath);
+            AssetLoader<Texture2D>::get(data.value("emission", ""));
         }
 
         // Setup sampler (with default filtering/wrapping)

@@ -6,17 +6,17 @@
 
 namespace our {
     enum class LightType {
-        Directional,
-        Point,
-        Spot
+        DIRECTIONAL,
+        POINT,
+        SPOT
     };
     
     class lightComponent : public Component {
         public:
             glm::vec4 color;
-            glm::vec4 diffuseColor;
-            glm::vec4 specularColor;
-            LightType type; // Directional Light, Point Light, Spot Light, these are all supported types
+            //glm::vec4 diffuseColor;
+            //glm::vec4 specularColor;
+            our::LightType type; // Directional Light, Point Light, Spot Light, these are all supported types
             float umbraAngle; // outer cone angle
             float penumbraAngle; // inner cone angle
             float intensity; // Brightness of the light
@@ -26,9 +26,9 @@ namespace our {
 
             void lightComponent::deserialize(const nlohmann::json& data){
                 if(!data.is_object()) return;
-                color = data.value("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-                diffuseColor = data.value("diffuseColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-                specularColor = data.value("specularColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                //color = data.value("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)); this get error I do not know why
+                //diffuseColor = data.value("diffuseColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+                //specularColor = data.value("specularColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
                 std::string lightTypeStr = data.value("type", "directional");
                 if(lightTypeStr == "point") type = our::LightType::POINT;
                 else if(lightTypeStr == "spot") type = our::LightType::SPOT;

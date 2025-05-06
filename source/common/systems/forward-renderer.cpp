@@ -146,7 +146,7 @@ namespace our {
                 }
             }
             //collect all light components
-            if(auto light = entity->getComponent<LightComponent>(); light){
+            if(auto light = entity->getComponent<lightComponent>(); light){
                 lights.push_back(light);
             }
         }
@@ -164,6 +164,7 @@ namespace our {
             float secondDistance = glm::dot(cameraForward, second.center);
             return firstDistance > secondDistance;
         });
+        
 
         //TODO: (Req 9) Get the camera ViewProjection matrix and store it in VP
         glm::mat4 VP = camera->getProjectionMatrix(windowSize) * camera->getViewMatrix();
