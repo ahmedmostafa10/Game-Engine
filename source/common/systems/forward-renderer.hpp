@@ -42,7 +42,7 @@ namespace our
         Texture2D *colorTarget, *depthTarget;
         TexturedMaterial* postprocessMaterial;
         //array for storing light components
-        std::vector<our::lightComponent> lights;
+        std::vector<our::lightComponent*> lights;
     public:
         // Initialize the renderer including the sky and the Postprocessing objects.
         // windowSize is the width & height of the window (in pixels).
